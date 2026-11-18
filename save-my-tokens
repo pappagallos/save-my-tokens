@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+"""Launch the installed tools from a checkout or PATH symlink."""
+from pathlib import Path
+import runpy
+import sys
+
+scripts = Path(__file__).resolve().parent / "plugins/save-my-tokens/skills/focus-output/scripts"
+sys.path.insert(0, str(scripts))
+mode = sys.argv[1:2]
+if mode in (["task"], ["chat"], ["route"], ["models"]):
+    script = "routing.py"
+elif mode in (["compare"], ["measure"]):
+    script = "compare.py"
+else:
+    script = "focus.py"
+runpy.run_path(str(scripts / script), run_name="__main__")

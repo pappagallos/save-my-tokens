@@ -1,0 +1,9 @@
+{
+  "name": "save-my-tokens-local",
+  "plugins": [{
+    "name": "save-my-tokens",
+    "source": {"source": "local", "path": "./plugins/save-my-tokens"},
+    "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+    "category": "Productivity"
+  }]
+}

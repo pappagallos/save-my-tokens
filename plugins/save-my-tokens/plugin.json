@@ -1,0 +1,15 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "save-my-tokens",
+  "version": "0.3.0",
+  "description": "Select a model per request, extract local evidence and compare token usage.",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Save My Tokens",
+        "shortDescription": "Route tasks and measure tokens",
+        "category": "Productivity"
+      }
+    }
+  }
+}
