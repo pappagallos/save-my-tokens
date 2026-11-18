@@ -49,10 +49,10 @@ ln -s "$PWD/save-my-tokens" "$HOME/.local/bin/save-my-tokens"
 | GitHub Copilot | `copilot` | `.github/skills/` | ACP のモデル一覧 · `copilot --acp` |
 | Devin | `devin` | `.devin/skills/` | ACP のモデル一覧 · `devin acp` |
 | OpenCode | `opencode` | `.opencode/skills/` | ACP のモデル一覧 · `opencode acp` |
-| Google Antigravity | `antigravity` | `.agent/skills/` | ACP のモデル一覧 · `agy_acp_server.par` |
+| Google Antigravity | `antigravity` | `.agents/skills/` | ACP のモデル一覧 · `agy_acp_server.par` |
 | Kiro | `kiro` | `.kiro/skills/` | ACP のモデル一覧 · `kiro-cli acp` |
 | TRAE | `trae` | `.trae/skills/` | ACP のモデル一覧 · `traecli acp serve` |
-| TRAE China | `trae-cn` | `.trae-cn/skills/` | ACP のモデル一覧 · `traecli acp serve` |
+| TRAE China | `trae-cn` | `.trae/skills/` | ACP のモデル一覧 · `traecli acp serve` |
 | Qoder | `qoder` | `.qoder/skills/` | ACP のモデル一覧 · `qodercli --acp` |
 | Mistral Vibe | `vibe` | `.vibe/skills/` | ACP のモデル一覧 · `vibe-acp` |
 | Pi | `pi` | `.pi/skills/` | ACP のモデル一覧 · `pi-acp` |
@@ -67,7 +67,7 @@ ACP は端末とコーディング支援ツールをつなぐ通信規約です�
 
 Claude の連続対話には `claude-agent-acp` も必要です。ACP はモデルの選択肢を返す環境で動作します。各ツールの権限設定が適用されます。
 
-表はスキルのインストール先です。実際のアカウントで応答を確認したのは Codex と Claude Code です。他のアダプターは模擬 CLI またはプロトコルの応答で確認しました。
+上表は共通スキルとターミナルでの動作です。通常のチャットの検証範囲は下表を参照してください。
 
 ## 通常の Codex チャットで作業を分担する
 
@@ -83,7 +83,60 @@ codex plugin add save-my-tokens-auto@save-my-tokens-local
 
 簡単な質問にはメインが答えます。分担する際は、抜粋には Luna、範囲を絞った調査には Terra、関連ファイルの変更には Sol、難しい設計の検討には Astra を優先します。現在のチャットで子に指定できるモデルから選びます。無効にすると新しいチャットからこのスキルが消えます。Codex CLI 0.169.0 の通常のチャットで、独立した二つのコード調査を依頼しました。実行記録ではメインが Sol（`gpt-6.2-sol`）、使用量の計算を調べた子が Terra（`gpt-6.1-terra`）でした。子の呼び出しにもトークンを使います。下の比較値はログ抜粋の実測結果です。 [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents)
 
-Claude Code、Cursor、Gemini CLI、Grok Build もサブエージェントのモデルを設定できます。このリポジトリの共通スキルで使えるのは、抜粋とターミナルでのモデル選択です。アプリ内のサブエージェントは各アプリで設定してください。 [Claude Code](https://code.claude.com/docs/en/sub-agents) · [Cursor](https://cursor.com/docs/subagents) · [Gemini CLI](https://geminicli.com/docs/core/subagents/) · [Grok Build](https://docs.x.ai/build/settings/reference)
+## 他のアプリの通常のチャットで自動的に分担する
+
+取得したリポジトリでコマンドを実行し、新しいチャットを開きます。`--auto-workers` を付けると下表の方法で分担を設定します。従来のコマンドは共通スキルのみを追加します。
+
+```sh
+python3 install.py --platform claude --project /path/to/project --auto-workers
+```
+
+モデル ID が必要な場合、インストーラーはログイン済みの CLI に一覧を問い合わせます。下の LIGHT、STANDARD、DEEP をそのアプリの子エージェントで選べる ID に置き換えても構いません。会話では作業ごとに役割を選びます。モデルの追加時は再実行して固定 ID を更新してください。ユーザーが編集したファイルは保持されます。利用可能なモデルが一つなら複数の役割で共有できます。
+
+```sh
+python3 install.py --platform cursor --project /path/to/project --auto-workers --worker-models LIGHT STANDARD DEEP
+```
+
+Grok と Devin は個人の設定ファイルを読みます。更新するには `--user-settings` を付けます。Grok では三つの子のモデルを設定し、Devin では既定モデルを Adaptive に切り替えます。Replit はアプリの設定画面で選択します。
+
+```sh
+python3 install.py --platform grok --project /path/to/project --auto-workers --user-settings
+python3 install.py --platform devin --project /path/to/project --auto-workers --user-settings
+```
+
+| プラットフォーム | アプリ内の設定 | 今回の検証範囲 |
+|---|---|---|
+| Codex | 上記の Auto Workers と個人設定を有効にします。 [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents) | メイン・子の実行記録 |
+| Claude Code | 根拠調査は Haiku、変更は Sonnet、難しい調査は Opus に任せるようプロジェクトルールを追加します。 [公式資料](https://code.claude.com/docs/en/sub-agents) | Haiku・Opus 自動呼び出し完了 |
+| Cursor | 三つの役割と常時適用ルールを追加します。プランやチームの設定で実行モデルが変わる場合があります。 [公式資料](https://cursor.com/docs/subagents) | 2026.11.17 はログインが必要で役割の読み込みは未確認 |
+| Gemini CLI | 三つの役割と GEMINI.md の指示を追加します。選択可能なモデル ID を使います。 [公式資料](https://geminicli.com/docs/core/subagents/) | 0.68.0 でローカル模擬サーバーへの子呼び出しを確認 |
+| GitHub Copilot CLI | 自動選択する三つの役割に必須モデルを割り当てます。検証時はメインを固定してください。 [公式資料](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli) | 1.0.113 で三つを認識。アカウントポリシーで推論を停止 |
+| OpenCode | 三つの役割を追加します。provider/model に任意で #variant を付けられます。 [公式資料](https://opencode.ai/docs/agents/) | 1.19.6・2.3.2 で認識、2.3.2 で模擬サーバーへの子呼び出し |
+| Grok Build | プロジェクトルールで explore、general-purpose、plan に分担します。--user-settings で個人のモデル設定も更新します。 [公式資料](https://docs.x.ai/build/settings/reference) | 1.0.89 で承認後に子の作業が二件完了。このアカウントは grok-4.7 のみ |
+| Devin CLI | /model adaptive か --user-settings で個人の既定値を設定します。企業ポリシーが適用されます。 [公式資料](https://docs.devin.ai/cli/adaptive) | 3000.14.30821 で個人設定を読み込み。モデル一覧にはログインが必要 |
+| Replit Agent | Free Mode は自動選択です。対象プランでは Agent 設定の Power/Max で Auto を選びます。 [公式資料](https://docs.replit.com/features/agent/agent-modes) | 設定手順を確認 |
+| Antigravity | flash・inherit・pro の役割を追加します。/agents で確認できます。 [公式資料](https://antigravity.google/docs/subagents) | 一時プロジェクトにインストール |
+| Kiro | IDE 1.x または CLI V3 で /model の ID を指定します。 [公式資料](https://kiro.dev/docs/custom-agents/configuration-reference/) | 一時プロジェクトにインストール |
+| Qoder | 信頼済みプロジェクトで /agents reload を実行します。既定は lite・efficient・performance です。 [公式資料](https://docs.qoder.com/cli/subagent) | 1.1.91 を起動。隔離環境で役割一覧の応答は未確認 |
+| Mistral Vibe | 登録済みのモデル別名を指定して信頼済みプロジェクトを開いてください。 [公式資料](https://docs.mistral.ai/vibe/code/cli/agents) | 3.1.2 で三つの別名を認識。代替モデルの通知に注意 |
+| TRAE China | 組み込み Agent とモデル ID を使います。必要に応じて Beta の Subagents Directory を有効にします。 [公式資料](https://docs.trae.cn/ide_subagents) | 一時プロジェクトにインストール |
+| Rovo Dev | 三つの役割を追加し、/subagents でそれぞれのモデルを選びます。 [公式資料](https://support.atlassian.com/rovo/docs/use-subagents-in-rovo-dev-cli/) | 一時プロジェクトにインストール |
+| Oh My Pi | 三つの task 役を追加し、Oh My Pi が認識するモデルを指定します。 [公式資料](https://github.com/can1357/oh-my-pi/blob/main/docs/task-agent-discovery.md) | 18.22.2 の /agents に三つの役割を表示 |
+| Pi | pi-subagents 拡張とプロジェクトの信頼が必要です。拡張と役割を追加し /subagents-doctor を実行します。 [公式資料](https://github.com/nicobailon/pi-subagents/blob/main/docs/agents.md) | 一時プロジェクトにインストール |
+| Hermes | advanced-delegation を有効にし、hermes delegation config で経路を作り /delegation で model_map を選びます。 [公式資料](https://hermes-agent.nousresearch.com/docs/user-guide/features/delegation) | 設定手順を確認 |
+| DeepSeek Harness | Plugins で子モデルの選択と提供元・モデルの組を許可し、新しいセッションを開きます。 [公式資料](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/subagent/tool-subagent/README.md) | 設定手順を確認 |
+| TRAE Global | プロジェクトの .trae/agents に三つの役割を追加し、組み込み Agent とモデル ID を使います。 [TRAE](https://docs.trae.ai/ide/subagents) | 一時プロジェクトにインストール |
+| Veto | veto doctor で連携を確認し、veto start で外部セッションを開始します。 [公式資料](https://github.com/oleg-koval/veto) | 設定手順を確認 |
+
+**2026年11月18日の検証。** ログイン済みの新しいチャットで、Codex 0.169.0 と 0.170.0 はメインを Astra に保ち、調査一件を Terra に任せました。簡単な計算にはメインだけが応答しました。Claude Code 2.1.319 では Sonnet が Haiku と Opus に分担しました。対象は Save My Tokens 0.4.0 と Auto Workers 0.2.0 です。下のトークングラフはログ抜粋の実測値です。子モデルの呼び出しにも使用量が発生します。
+
+ローカル模擬サーバーは所定の応答でアプリの委任経路とモデル ID を検証します。一時プロジェクトでは設定ファイルの生成を確認しています。実際の使用量と削減率は各アカウントで別途計測が必要です。Grok の個人設定には Python 3.11 以上または tomli が必要です。
+
+下のコマンドでインストールの検査を再実行できます。実際のアプリでは新しいチャットで独立した調査を二件依頼し、子の実行記録で役割と実行モデルを確認してください。
+
+```sh
+python3 -m unittest discover -s experiments -p 'test_*.py'
+```
 
 ## リクエストごとのモデル選択
 

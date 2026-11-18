@@ -49,10 +49,10 @@ ln -s "$PWD/save-my-tokens" "$HOME/.local/bin/save-my-tokens"
 | GitHub Copilot | `copilot` | `.github/skills/` | ACP model list · `copilot --acp` |
 | Devin | `devin` | `.devin/skills/` | ACP model list · `devin acp` |
 | OpenCode | `opencode` | `.opencode/skills/` | ACP model list · `opencode acp` |
-| Google Antigravity | `antigravity` | `.agent/skills/` | ACP model list · `agy_acp_server.par` |
+| Google Antigravity | `antigravity` | `.agents/skills/` | ACP model list · `agy_acp_server.par` |
 | Kiro | `kiro` | `.kiro/skills/` | ACP model list · `kiro-cli acp` |
 | TRAE | `trae` | `.trae/skills/` | ACP model list · `traecli acp serve` |
-| TRAE China | `trae-cn` | `.trae-cn/skills/` | ACP model list · `traecli acp serve` |
+| TRAE China | `trae-cn` | `.trae/skills/` | ACP model list · `traecli acp serve` |
 | Qoder | `qoder` | `.qoder/skills/` | ACP model list · `qodercli --acp` |
 | Mistral Vibe | `vibe` | `.vibe/skills/` | ACP model list · `vibe-acp` |
 | Pi | `pi` | `.pi/skills/` | ACP model list · `pi-acp` |
@@ -67,7 +67,7 @@ ACP (Agent Client Protocol) lets a terminal ask a coding agent which models it o
 
 The terminal chat uses a separate ACP executable for Claude (`claude-agent-acp`). The agent must offer a model picker over ACP. Terminal permissions continue to apply.
 
-Each row is an installation target. The login and live execution tests on the development machine covered Codex and Claude Code. Other adapters were checked with simulated CLI or protocol responses.
+The table above describes the portable skill and terminal launcher. Verification of native chats and workers is listed below.
 
 ## Native workers in a Codex conversation
 
@@ -83,7 +83,60 @@ Add this standing preference once to your personal `~/.codex/AGENTS.md`, then op
 
 The main agent answers simple questions itself. It can assign a bounded investigation to Terra, related edits to Sol, a difficult design question to Astra, or simple extraction to Luna when available. Only models offered for workers in that conversation qualify. Turning the companion off removes its skill from new conversations. In a Codex CLI 0.169.0 check, one ordinary request asked for two independent code investigations. The session records showed Sol (`gpt-6.2-sol`) leading and Terra (`gpt-6.1-terra`) checking the usage calculation. Workers use additional tokens. The paired measurements below cover log extraction. [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents)
 
-Other apps have their own worker settings. Claude Code, Cursor, Gemini CLI and Grok Build accept model choices for native workers. Installing the portable skill sets up extraction and terminal routing. Configure worker models separately in those apps. [Claude Code](https://code.claude.com/docs/en/sub-agents) · [Cursor](https://cursor.com/docs/subagents) · [Gemini CLI](https://geminicli.com/docs/core/subagents/) · [Grok Build](https://docs.x.ai/build/settings/reference)
+## Automatic routing in other apps
+
+Run the installer in the checkout. Add `--auto-workers` to opt into the host integration in the table, then open a new conversation. The plain installer still installs only the portable skill.
+
+```sh
+python3 install.py --platform claude --project /path/to/project --auto-workers
+```
+
+For hosts requiring model IDs, the installer tries the signed-in CLI at installation time. Alternatively, replace LIGHT, STANDARD and DEEP below with IDs from the host’s worker picker. Each task selects a role. To refresh pinned IDs when the provider changes its catalog, rerun the installer. Existing custom edits are preserved. Hosts with one available model can assign the same model to all roles.
+
+```sh
+python3 install.py --platform cursor --project /path/to/project --auto-workers --worker-models LIGHT STANDARD DEEP
+```
+
+Grok and Devin store these model settings in the user account. Add `--user-settings` to update the personal file. In Grok this maps the three workers. In Devin it changes the default model to Adaptive. Replit uses its own settings menu.
+
+```sh
+python3 install.py --platform grok --project /path/to/project --auto-workers --user-settings
+python3 install.py --platform devin --project /path/to/project --auto-workers --user-settings
+```
+
+| Platform | Native setup | Verified here |
+|---|---|---|
+| Codex | Enable Auto Workers and the standing preference above. [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents) | Live main and child model records |
+| Claude Code | Haiku for evidence, Sonnet for edits, Opus for deep investigation. Project rules activate delegation. [Docs](https://code.claude.com/docs/en/sub-agents) | Live automatic Haiku and Opus calls |
+| Cursor | Install three profiles and an always-on project rule. The plan or team policy can change the model used. [Docs](https://cursor.com/docs/subagents) | 2026.11.17 required sign-in before loading could be verified |
+| Gemini CLI | Install three agents and project instructions in GEMINI.md. Use selectable model IDs. [Docs](https://geminicli.com/docs/core/subagents/) | 0.68.0 dispatched a worker to a local test server |
+| GitHub Copilot CLI | Install three profiles with required model policy and automatic selection. Use a fixed main model to exercise these pins. [Docs](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli) | 1.0.113 found 3 profiles. Account policy blocked inference. |
+| OpenCode | Install three subagents. Use provider/model IDs, optionally with a #variant. [Docs](https://opencode.ai/docs/agents/) | 1.19.6 and 2.3.2 loaded profiles. 2.3.2 dispatched against a local test server. |
+| Grok Build | Project rules delegate to explore, general-purpose and plan. Add --user-settings to set each model in the personal configuration. [Docs](https://docs.x.ai/build/settings/reference) | 1.0.89 completed two workers after approval. This account offered one model, grok-4.7. |
+| Devin CLI | Select /model adaptive or set the personal default with --user-settings. Enterprise policy applies. [Docs](https://docs.devin.ai/cli/adaptive) | 3000.14.30821 accepted the personal config. Model list required sign-in. |
+| Replit Agent | Free Mode routes automatically. Where eligible, choose Auto in Power/Max in Agent settings. [Docs](https://docs.replit.com/features/agent/agent-modes) | Setup instructions checked |
+| Antigravity | Three profiles with native flash/inherit/pro tiers. Check /agents. [Docs](https://antigravity.google/docs/subagents) | Installed in a temporary project |
+| Kiro | IDE 1.x or CLI V3. Use model IDs from /model. [Docs](https://kiro.dev/docs/custom-agents/configuration-reference/) | Installed in a temporary project |
+| Qoder | Open a trusted project and run /agents reload. Default tiers are lite, efficient and performance. [Docs](https://docs.qoder.com/cli/subagent) | 1.1.91 ran. Profile listing did not finish in the isolated setup. |
+| Mistral Vibe | Provide model aliases configured in Vibe and open a trusted project. [Docs](https://docs.mistral.ai/vibe/code/cli/agents) | 3.1.2 loaded all three configured aliases. Check notices for model fallback. |
+| TRAE China | Use the built-in Agent and its built-in model IDs. Enable the Subagents Directory beta option if needed. [Docs](https://docs.trae.cn/ide_subagents) | Installed in a temporary project |
+| Rovo Dev | Install three roles. Select a model for each in /subagents. [Docs](https://support.atlassian.com/rovo/docs/use-subagents-in-rovo-dev-cli/) | Installed in a temporary project |
+| Oh My Pi | Install three named task agents. Supply model selectors recognized by Oh My Pi. [Docs](https://github.com/can1357/oh-my-pi/blob/main/docs/task-agent-discovery.md) | 18.22.2 listed three project roles in /agents |
+| Pi | Requires the pi-subagents extension and project trust. Install the extension in Pi, install the profiles here, then run /subagents-doctor. [Docs](https://github.com/nicobailon/pi-subagents/blob/main/docs/agents.md) | Installed in a temporary project |
+| Hermes | Enable advanced-delegation. Set named routes with hermes delegation config and select model_map in /delegation. [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/delegation) | Setup instructions checked |
+| DeepSeek Harness | Enable worker model selection in Plugins and authorize the provider/model pair. Start a new session. [Docs](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/subagent/tool-subagent/README.md) | Setup instructions checked |
+| TRAE Global | Install three project agents in .trae/agents. Use the built-in Agent and built-in model IDs. [TRAE](https://docs.trae.ai/ide/subagents) | Installed in a temporary project |
+| Veto | Use veto doctor and veto start to route a new external session. [Docs](https://github.com/oleg-koval/veto) | Setup instructions checked |
+
+**Verification on 2026-11-18.** In fresh, signed-in chats, Codex 0.169.0 and 0.170.0 kept Astra for the main conversation and assigned one investigation to Terra. A simple arithmetic request used only the main agent. Claude Code 2.1.319 kept Sonnet and invoked both Haiku and Opus. The Codex packages tested were Save My Tokens 0.4.0 and Auto Workers 0.2.0. The token chart below measures log extraction. An automatic worker starts a separate billable call.
+
+A local test server verifies the host’s dispatch and model IDs with scripted responses. A project installation checks generated files. Live usage and savings require separately measured runs on your account. Grok personal configuration requires Python 3.11+ or the tomli package.
+
+Rerun the installation checks locally with the command below. For a live check, ask for two independent investigations in a new conversation and inspect the worker events for the role and actual model.
+
+```sh
+python3 -m unittest discover -s experiments -p 'test_*.py'
+```
 
 ## Route a request
 

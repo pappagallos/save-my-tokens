@@ -49,10 +49,10 @@ ln -s "$PWD/save-my-tokens" "$HOME/.local/bin/save-my-tokens"
 | GitHub Copilot | `copilot` | `.github/skills/` | ACP 模型列表 · `copilot --acp` |
 | Devin | `devin` | `.devin/skills/` | ACP 模型列表 · `devin acp` |
 | OpenCode | `opencode` | `.opencode/skills/` | ACP 模型列表 · `opencode acp` |
-| Google Antigravity | `antigravity` | `.agent/skills/` | ACP 模型列表 · `agy_acp_server.par` |
+| Google Antigravity | `antigravity` | `.agents/skills/` | ACP 模型列表 · `agy_acp_server.par` |
 | Kiro | `kiro` | `.kiro/skills/` | ACP 模型列表 · `kiro-cli acp` |
 | TRAE | `trae` | `.trae/skills/` | ACP 模型列表 · `traecli acp serve` |
-| TRAE China | `trae-cn` | `.trae-cn/skills/` | ACP 模型列表 · `traecli acp serve` |
+| TRAE China | `trae-cn` | `.trae/skills/` | ACP 模型列表 · `traecli acp serve` |
 | Qoder | `qoder` | `.qoder/skills/` | ACP 模型列表 · `qodercli --acp` |
 | Mistral Vibe | `vibe` | `.vibe/skills/` | ACP 模型列表 · `vibe-acp` |
 | Pi | `pi` | `.pi/skills/` | ACP 模型列表 · `pi-acp` |
@@ -67,7 +67,7 @@ ACP 是终端和编码助手之间的通信协议。终端通过它获取可用�
 
 Claude 连续对话还需要 `claude-agent-acp`。ACP 程序必须公开可选模型。平台的工具权限继续生效。
 
-表中列出技能安装目标。已使用实际账号验证 Codex 和 Claude Code 的回复，其余适配器通过模拟 CLI 或协议响应进行检查。
+上表描述通用技能及终端执行器。应用内会话的验证范围见下表。
 
 ## 在普通 Codex 对话中分配子任务
 
@@ -83,7 +83,60 @@ codex plugin add save-my-tokens-auto@save-my-tokens-local
 
 主代理直接回答简单问题。需要分工时，摘录优先用 Luna，局部调查用 Terra，跨文件修改用 Sol，复杂设计分析用 Astra。只能从当前对话允许的子代理模型中选择。关闭插件后，新对话中将不再显示该技能。在 Codex CLI 0.169.0 的普通对话中，我们要求调查两条独立的代码路径。会话记录显示主模型为 Sol（`gpt-6.2-sol`），检查用量计算的子代理为 Terra（`gpt-6.1-terra`）。启动子代理也会消耗词元。下方的对比数据来自日志摘录实验。 [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents)
 
-Claude Code、Cursor、Gemini CLI 和 Grok Build 都有原生子代理模型设置。安装本仓库的通用技能可使用摘录和终端模型路由。应用内的子代理模型需另行配置。 [Claude Code](https://code.claude.com/docs/en/sub-agents) · [Cursor](https://cursor.com/docs/subagents) · [Gemini CLI](https://geminicli.com/docs/core/subagents/) · [Grok Build](https://docs.x.ai/build/settings/reference)
+## 在其他应用的对话中自动分配任务
+
+在克隆的仓库中运行安装命令并开启新对话。添加 `--auto-workers` 可启用下表中的集成方式。普通安装命令只安装通用技能。
+
+```sh
+python3 install.py --platform claude --project /path/to/project --auto-workers
+```
+
+需要模型 ID 时，安装程序会查询已登录的 CLI。也可以将下方的 LIGHT、STANDARD、DEEP 替换成该应用子代理可选的模型 ID。每个任务按角色分配。平台发布新模型后，再次运行安装程序以刷新固定的 ID。用户编辑过的文件会保留。如果只有一个可用模型，多个角色可以共用。
+
+```sh
+python3 install.py --platform cursor --project /path/to/project --auto-workers --worker-models LIGHT STANDARD DEEP
+```
+
+Grok 和 Devin 从个人文件读取这些设置。添加 `--user-settings` 可更新个人文件。Grok 会设置三个子代理的模型，Devin 会把默认模型改成 Adaptive。Replit 需要在应用的设置菜单中选择。
+
+```sh
+python3 install.py --platform grok --project /path/to/project --auto-workers --user-settings
+python3 install.py --platform devin --project /path/to/project --auto-workers --user-settings
+```
+
+| 平台 | 应用内设置 | 本次验证范围 |
+|---|---|---|
+| Codex | 启用上述 Auto Workers 和个人指令。 [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents) | 真实主模型及子模型记录 |
+| Claude Code | 项目规则引导主代理把取证、修改、复杂调查分别交给 Haiku、Sonnet、Opus。 [文档](https://code.claude.com/docs/en/sub-agents) | 实际自动调用 Haiku 和 Opus |
+| Cursor | 安装三个角色和始终生效的项目规则。实际模型由套餐及团队策略决定。 [文档](https://cursor.com/docs/subagents) | 2026.11.17 要求登录，未确认角色加载 |
+| Gemini CLI | 安装三个子代理并在 GEMINI.md 中追加项目指令。使用可选模型 ID。 [文档](https://geminicli.com/docs/core/subagents/) | 0.68.0 已向本地测试服务器发出子代理请求 |
+| GitHub Copilot CLI | 安装三个可自动选择的角色并要求使用指定模型。验证时将主模型设为固定值。 [文档](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli) | 1.0.113 找到三个角色，账户策略阻止推理 |
+| OpenCode | 安装三个子代理，使用 provider/model，可附加 #variant。 [文档](https://opencode.ai/docs/agents/) | 1.19.6 和 2.3.2 载入角色，2.3.2 在本地测试服务中完成委派 |
+| Grok Build | 项目规则调用 explore、general-purpose、plan。加 --user-settings 可写入个人模型映射。 [文档](https://docs.x.ai/build/settings/reference) | 1.0.89 经授权完成两个子任务。该账户只提供 grok-4.7 |
+| Devin CLI | 使用 /model adaptive 或通过 --user-settings 设置个人默认值。受企业策略约束。 [文档](https://docs.devin.ai/cli/adaptive) | 3000.14.30821 接受配置；模型列表要求登录 |
+| Replit Agent | Free Mode 自动路由。在符合条件的套餐中可在 Power/Max 下选择 Auto。 [文档](https://docs.replit.com/features/agent/agent-modes) | 已核对设置步骤 |
+| Antigravity | 安装 flash、inherit、pro 三个角色，可在 /agents 中确认。 [文档](https://antigravity.google/docs/subagents) | 已在临时项目安装 |
+| Kiro | IDE 1.x 或 CLI V3，使用 /model 中的模型 ID。 [文档](https://kiro.dev/docs/custom-agents/configuration-reference/) | 已在临时项目安装 |
+| Qoder | 在受信任项目中运行 /agents reload，默认档位为 lite、efficient、performance。 [文档](https://docs.qoder.com/cli/subagent) | 1.1.91 可启动，隔离环境中未返回角色列表 |
+| Mistral Vibe | 提供已配置的模型别名，并打开受信任的项目。 [文档](https://docs.mistral.ai/vibe/code/cli/agents) | 3.1.2 载入三个别名，需查看回退提示 |
+| TRAE China | 使用内置 Agent 和内置模型 ID。必要时在 Beta 中启用 Subagents Directory。 [文档](https://docs.trae.cn/ide_subagents) | 已在临时项目安装 |
+| Rovo Dev | 安装三个角色后，在 /subagents 中分别选择模型。 [文档](https://support.atlassian.com/rovo/docs/use-subagents-in-rovo-dev-cli/) | 已在临时项目安装 |
+| Oh My Pi | 安装三个 task 角色，指定 Oh My Pi 识别的模型。 [文档](https://github.com/can1357/oh-my-pi/blob/main/docs/task-agent-discovery.md) | 18.22.2 的 /agents 列出三个项目角色 |
+| Pi | 需要 pi-subagents 扩展并信任项目。安装扩展和角色后运行 /subagents-doctor。 [文档](https://github.com/nicobailon/pi-subagents/blob/main/docs/agents.md) | 已在临时项目安装 |
+| Hermes | 启用 advanced-delegation，用 hermes delegation config 设置路由，在 /delegation 中选择 model_map。 [文档](https://hermes-agent.nousresearch.com/docs/user-guide/features/delegation) | 已核对设置步骤 |
+| DeepSeek Harness | 在 Plugins 中启用子代理模型选择，授权提供商与模型组合，然后开启新会话。 [文档](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/subagent/tool-subagent/README.md) | 已核对设置步骤 |
+| TRAE Global | 在 .trae/agents 安装三个角色，使用内置 Agent 和模型 ID。 [TRAE](https://docs.trae.ai/ide/subagents) | 已在临时项目安装 |
+| Veto | 用 veto doctor 检查集成，用 veto start 启动新的外部会话。 [文档](https://github.com/oleg-koval/veto) | 已核对设置步骤 |
+
+**2026-11-18 验证。** 在已登录的新会话中，Codex 0.169.0 和 0.170.0 保留 Astra 作为主模型，并把一项调查交给 Terra；简单算术只调用主模型。Claude Code 2.1.319 由 Sonnet 分别调用 Haiku 和 Opus。受测 Codex 软件包为 Save My Tokens 0.4.0 和 Auto Workers 0.2.0。下方词元图来自日志摘录实验。每次调用子模型都会产生额外用量。
+
+本地测试服务器用预设响应验证宿主的真实分派路径和模型 ID。临时项目安装只检查生成的配置。实际用量及节省情况需要在账户上另行实测。Grok 个人配置需 Python 3.11+ 或 tomli。
+
+可运行以下命令复查安装。检查真实应用时，在新会话中提出两项独立调查，然后在子任务记录中核对角色和实际模型。
+
+```sh
+python3 -m unittest discover -s experiments -p 'test_*.py'
+```
 
 ## 为每个请求选择模型
 

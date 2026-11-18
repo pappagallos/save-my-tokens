@@ -49,10 +49,10 @@ ln -s "$PWD/save-my-tokens" "$HOME/.local/bin/save-my-tokens"
 | GitHub Copilot | `copilot` | `.github/skills/` | ACP 모델 목록 · `copilot --acp` |
 | Devin | `devin` | `.devin/skills/` | ACP 모델 목록 · `devin acp` |
 | OpenCode | `opencode` | `.opencode/skills/` | ACP 모델 목록 · `opencode acp` |
-| Google Antigravity | `antigravity` | `.agent/skills/` | ACP 모델 목록 · `agy_acp_server.par` |
+| Google Antigravity | `antigravity` | `.agents/skills/` | ACP 모델 목록 · `agy_acp_server.par` |
 | Kiro | `kiro` | `.kiro/skills/` | ACP 모델 목록 · `kiro-cli acp` |
 | TRAE | `trae` | `.trae/skills/` | ACP 모델 목록 · `traecli acp serve` |
-| TRAE China | `trae-cn` | `.trae-cn/skills/` | ACP 모델 목록 · `traecli acp serve` |
+| TRAE China | `trae-cn` | `.trae/skills/` | ACP 모델 목록 · `traecli acp serve` |
 | Qoder | `qoder` | `.qoder/skills/` | ACP 모델 목록 · `qodercli --acp` |
 | Mistral Vibe | `vibe` | `.vibe/skills/` | ACP 모델 목록 · `vibe-acp` |
 | Pi | `pi` | `.pi/skills/` | ACP 모델 목록 · `pi-acp` |
@@ -67,7 +67,7 @@ ACP는 터미널이 코딩 도구에 사용 가능한 모델을 묻고 질문을
 
 Claude의 연속 대화에는 `claude-agent-acp` 실행 파일이 추가로 필요합니다. ACP 방식은 해당 버전이 모델 목록을 제공해야 동작하며, 도구 실행 권한은 그대로 적용됩니다.
 
-표의 각 행은 스킬을 설치할 수 있는 대상입니다. 실제 로그인 계정으로 답을 받은 환경은 Codex와 Claude Code입니다. 나머지 어댑터는 모의 CLI 또는 통신 응답으로 검사했습니다.
+위 표는 공통 스킬과 터미널 실행기를 설명합니다. 일반 대화의 자동 배정 검증 범위는 아래 표에서 확인할 수 있습니다.
 
 ## 일반 Codex 대화에서 작업 나누기
 
@@ -83,7 +83,60 @@ codex plugin add save-my-tokens-auto@save-my-tokens-local
 
 간단한 질문은 메인이 답합니다. 분리할 만한 작업이 있으면 단순 발췌는 Luna, 좁은 범위의 조사는 Terra, 관련 파일의 수정은 Sol, 복잡한 설계 검토는 Astra를 우선합니다. 현재 대화에서 보조 작업에 쓸 수 있는 모델 중에서 고릅니다. 플러그인을 끄면 새 대화에서 이 스킬이 사라집니다. Codex CLI 0.169.0에서 일반 대화로 두 코드 경로의 조사를 요청했습니다. 실행 기록에서 메인은 Sol(`gpt-6.2-sol`), 토큰 계산을 조사한 보조 모델은 Terra(`gpt-6.1-terra`)로 확인했습니다. 작업을 나누면 별도 호출에 토큰이 듭니다. 아래 전후 비교 수치는 로그 발췌 실험 결과입니다. [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents)
 
-Claude Code, Cursor, Gemini CLI, Grok Build에도 작업을 나눠 맡기고 역할별 모델을 고르는 기능이 있습니다. 이 저장소의 공통 스킬을 설치하면 발췌와 터미널 모델 선택을 쓸 수 있습니다. 각 앱에서 쓰는 보조 모델은 해당 앱에서 따로 설정하세요. [Claude Code](https://code.claude.com/docs/en/sub-agents) · [Cursor](https://cursor.com/docs/subagents) · [Gemini CLI](https://geminicli.com/docs/core/subagents/) · [Grok Build](https://docs.x.ai/build/settings/reference)
+## 다른 앱의 일반 대화에서 자동 배정하기
+
+내려받은 저장소에서 아래 명령을 실행하고 새 대화를 여세요. `--auto-workers`를 붙이면 표에 나온 방식으로 작업 배정을 설정합니다. 기존 설치 명령만 실행하면 공통 스킬만 설치합니다.
+
+```sh
+python3 install.py --platform claude --project /path/to/project --auto-workers
+```
+
+모델 ID가 필요한 앱은 설치할 때 로그인된 CLI에 모델 목록을 요청합니다. 직접 지정하려면 아래 LIGHT, STANDARD, DEEP 자리에 그 앱에서 보조 작업용으로 선택할 수 있는 모델 ID를 넣으세요. 대화 중에는 작업에 맞는 역할을 고릅니다. 새 모델이 출시되면 설치 명령을 다시 실행해 역할별 모델을 갱신하세요. 직접 편집한 파일은 보존합니다. 사용 가능한 모델이 하나면 여러 역할이 같은 모델을 쓸 수 있습니다.
+
+```sh
+python3 install.py --platform cursor --project /path/to/project --auto-workers --worker-models LIGHT STANDARD DEEP
+```
+
+Grok과 Devin은 모델 설정을 개인 파일에서 읽습니다. 이 파일까지 바꾸려면 `--user-settings`를 붙이세요. Grok은 세 보조 역할의 모델을 지정하고, Devin은 기본 모델을 Adaptive로 바꿉니다. Replit은 앱의 설정 메뉴에서 선택합니다.
+
+```sh
+python3 install.py --platform grok --project /path/to/project --auto-workers --user-settings
+python3 install.py --platform devin --project /path/to/project --auto-workers --user-settings
+```
+
+| 플랫폼 | 앱에서 적용하는 방법 | 이번에 확인한 범위 |
+|---|---|---|
+| Codex | 위의 Auto Workers와 개인 지침을 켜세요. [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents) | 메인·보조 모델 실행 기록 |
+| Claude Code | 근거 찾기는 Haiku, 수정은 Sonnet, 복잡한 조사는 Opus에 맡깁니다. 프로젝트 규칙이 배정을 요청합니다. [공식 문서](https://code.claude.com/docs/en/sub-agents) | 자동 Haiku·Opus 호출 완료 |
+| Cursor | 역할 3개와 대화마다 읽는 규칙을 설치합니다. 요금제나 팀 정책에 따라 실제 모델이 달라질 수 있습니다. [공식 문서](https://cursor.com/docs/subagents) | 2026.11.17 실행 시 로그인이 필요해 역할 로드 미확인 |
+| Gemini CLI | 역할 3개와 GEMINI.md 지침을 설치합니다. 현재 선택할 수 있는 모델 ID를 사용하세요. [공식 문서](https://geminicli.com/docs/core/subagents/) | 0.68.0에서 로컬 모의 서버로 보조 호출 확인 |
+| GitHub Copilot CLI | 자동 선택할 수 있는 역할 3개에 필수 모델을 지정합니다. 역할별 모델을 검증할 때 메인은 특정 모델로 설정하세요. [공식 문서](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli) | 1.0.113이 역할 3개를 인식했고 계정 정책으로 응답 실행이 차단됨 |
+| OpenCode | 역할 3개를 설치합니다. provider/model 형식의 ID와 선택 사항인 #variant를 지원합니다. [공식 문서](https://opencode.ai/docs/agents/) | 1.19.6·2.3.2에서 역할 로드, 2.3.2에서 모의 서버로 보조 호출 |
+| Grok Build | 프로젝트 규칙이 explore·general-purpose·plan에 배정합니다. --user-settings를 붙이면 개인 설정에 모델까지 저장합니다. [공식 문서](https://docs.x.ai/build/settings/reference) | 1.0.89에서 승인 후 보조 작업 2개 완료. 이 계정에 제공된 모델은 grok-4.7 하나 |
+| Devin CLI | /model adaptive를 실행하거나 --user-settings로 개인 기본값을 지정합니다. 기업 계정 정책이 적용됩니다. [공식 문서](https://docs.devin.ai/cli/adaptive) | 3000.14.30821이 개인 설정을 읽음. 모델 목록 조회에 로그인 필요 |
+| Replit Agent | Free Mode는 자동으로 선택합니다. 해당 요금제에서는 Agent 설정의 Power/Max에서 Auto를 선택하세요. [공식 문서](https://docs.replit.com/features/agent/agent-modes) | 설정 안내 확인 |
+| Antigravity | flash·inherit·pro 역할을 설치합니다. /agents에서 확인하세요. [공식 문서](https://antigravity.google/docs/subagents) | 임시 프로젝트 설치 |
+| Kiro | IDE 1.x 또는 CLI V3에서 /model의 모델 ID를 쓰세요. [공식 문서](https://kiro.dev/docs/custom-agents/configuration-reference/) | 임시 프로젝트 설치 |
+| Qoder | 신뢰하는 프로젝트에서 /agents reload를 실행하세요. 기본 역할은 lite·efficient·performance입니다. [공식 문서](https://docs.qoder.com/cli/subagent) | 1.1.91 실행. 격리 환경에서 역할 목록 응답 미확인 |
+| Mistral Vibe | Vibe에 등록된 모델 별칭을 지정하고 신뢰하는 프로젝트를 여세요. [공식 문서](https://docs.mistral.ai/vibe/code/cli/agents) | 3.1.2에서 설정된 별칭 3개 로드. 대체 모델 안내 확인 필요 |
+| TRAE China | 내장 Agent와 내장 모델 ID를 사용하세요. 필요하면 Beta에서 Subagents Directory를 켜세요. [공식 문서](https://docs.trae.cn/ide_subagents) | 임시 프로젝트 설치 |
+| Rovo Dev | 역할 3개를 설치한 뒤 /subagents 메뉴에서 각각의 모델을 선택하세요. [공식 문서](https://support.atlassian.com/rovo/docs/use-subagents-in-rovo-dev-cli/) | 임시 프로젝트 설치 |
+| Oh My Pi | 역할 3개를 설치합니다. Oh My Pi의 작업 에이전트에서 쓸 수 있는 모델을 지정하세요. [공식 문서](https://github.com/can1357/oh-my-pi/blob/main/docs/task-agent-discovery.md) | 18.22.2의 /agents에서 역할 3개 인식 |
+| Pi | Pi의 pi-subagents 확장과 프로젝트 신뢰가 필요합니다. 확장과 역할을 설치한 뒤 /subagents-doctor를 실행하세요. [공식 문서](https://github.com/nicobailon/pi-subagents/blob/main/docs/agents.md) | 임시 프로젝트 설치 |
+| Hermes | advanced-delegation을 켜고 hermes delegation config로 경로를 지정한 뒤 /delegation에서 model_map을 선택하세요. [공식 문서](https://hermes-agent.nousresearch.com/docs/user-guide/features/delegation) | 설정 안내 확인 |
+| DeepSeek Harness | Plugins에서 보조 모델 선택을 켜고 허용할 제공사·모델 쌍을 지정한 뒤 새 대화를 여세요. [공식 문서](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/subagent/tool-subagent/README.md) | 설정 안내 확인 |
+| TRAE Global | 프로젝트의 .trae/agents에 역할 3개를 설치합니다. 내장 Agent와 내장 모델 ID를 쓰세요. [TRAE](https://docs.trae.ai/ide/subagents) | 임시 프로젝트 설치 |
+| Veto | veto doctor로 연결을 확인하고 veto start로 새 외부 세션을 실행합니다. [공식 문서](https://github.com/oleg-koval/veto) | 설정 안내 확인 |
+
+**2026년 11월 18일 검증.** 로그인된 새 대화에서 Codex 0.169.0과 0.170.0은 메인을 Astra로 유지하고 조사 한 건을 Terra에 맡겼습니다. 간단한 계산에서는 메인만 실행됐습니다. Claude Code 2.1.319에서는 메인 Sonnet이 Haiku와 Opus에 각각 맡겼습니다. 검증한 Codex 패키지는 Save My Tokens 0.4.0과 Auto Workers 0.2.0입니다. 아래 토큰 그래프는 로그 발췌 실험 결과입니다. 보조 모델을 호출하면 그 모델의 사용량도 발생합니다.
+
+로컬 모의 서버 검증은 정해 둔 응답으로 앱의 실제 위임 경로와 모델 ID를 확인한 것입니다. 임시 프로젝트 설치는 생성된 설정 파일을 확인한 단계입니다. 각 계정의 실제 사용량과 절약률은 별도 측정이 필요합니다. Grok 개인 설정에는 Python 3.11 이상 또는 tomli 패키지가 필요합니다.
+
+아래 명령으로 설치 검사를 다시 실행할 수 있습니다. 실제 앱을 확인하려면 새 대화에서 서로 독립적인 조사 두 건을 요청한 다음, 보조 작업의 실행 기록에서 역할과 실제 모델을 확인하세요.
+
+```sh
+python3 -m unittest discover -s experiments -p 'test_*.py'
+```
 
 ## 요청마다 모델 고르기
 

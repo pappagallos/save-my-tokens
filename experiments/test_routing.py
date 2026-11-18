@@ -54,9 +54,12 @@ class RoutingTests(unittest.TestCase):
             self.assertEqual(run.call_args.args[0], ["veto", "start", "--agent", "claude", "--model", "sonnet", "--", "fix a typo"])
 
     def test_native_catalogs_and_dispatch(self):
-        answer = subprocess.CompletedProcess([], 0, "Available models\n  grok-4-fast - Fast\n  grok-4-reasoning - Deep\n")
+        answer = subprocess.CompletedProcess([], 0, "Available models\n  grok-4-fast - Fast\n  - grok-4-reasoning - Deep\n")
         with patch("catalog.subprocess.run", return_value=answer):
             self.assertEqual(listed("grok"), ["grok-4-fast", "grok-4-reasoning"])
+        signed_out = subprocess.CompletedProcess([], 0, "You are not authenticated.\n  * grok-4.6\n")
+        with patch("catalog.subprocess.run", return_value=signed_out), self.assertRaisesRegex(ValueError, "sign in"):
+            listed("grok")
         codex = {"models": [{"slug": "gpt-hidden", "visibility": "hide"},
                             {"slug": "gpt-6-sol", "visibility": "list"}]}
         answer = subprocess.CompletedProcess([], 0, json.dumps(codex))

@@ -69,9 +69,11 @@ def listed(engine):
         rows = data if isinstance(data, list) else data["models"]
         return [r["slug"] for r in rows if r.get("visibility") == "list"]
     clean = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", result.stdout)
+    if engine == "grok" and "you are not authenticated" in clean.lower():
+        raise ValueError("sign in to Grok Build to use your account model list, or supply explicit model IDs")
     ids = []
     for line in clean.splitlines():
-        match = re.match(r"^\s*[│*•>\s]*([a-z0-9][a-z0-9._:/-]*-[a-z0-9._:/-]+)(?=\s|$)", line)
+        match = re.match(r"^\s*[│*•>\s]*(?:-\s+)?([a-z0-9][a-z0-9._:/-]*-[a-z0-9._:/-]+)(?=\s|$)", line)
         if match:
             ids.append(match[1])
     return list(dict.fromkeys(ids))
