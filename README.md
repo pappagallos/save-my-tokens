@@ -4,7 +4,9 @@
 
 Send the useful lines of a long log to your coding agent and choose a model for each request. Selection runs on your computer without a model call.
 
-![A question selects excerpts from a log. One model answers using those excerpts.](docs/how-it-works.webp)
+![A log is reduced to excerpts and a selector routes one request to Sol.](docs/how-it-works.webp)
+
+[See how four paired runs saved 24,082 tokens](#what-we-measured)
 
 ## How it works
 
@@ -123,6 +125,8 @@ uv run --with tiktoken==0.12.0 -- ./save-my-tokens measure "$question" --file /t
 Each record includes the question, both models, input, cached input, output, total, elapsed seconds, both answers and any expected strings. Cached reads are included in input. Savings = before total − after total. Negative values mean the second run used more tokens. `--out` appends the question and answers to your chosen local file.
 
 ## What we measured
+
+![Across four paired runs, total tokens fell from 81,515 to 57,433, saving 24,082 (29.54%). The two answers differed in the Sol comparison.](docs/token-savings-en.webp)
 
 | Question | Model | Before → after (total) | Change | Answer |
 |---|---|---|---|---|
