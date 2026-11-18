@@ -1,0 +1,15 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "save-my-tokens-auto",
+  "version": "0.1.0",
+  "description": "Delegate independent work in ordinary Codex conversations and choose an available model per worker.",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Save My Tokens \u00b7 Auto Workers",
+        "shortDescription": "Assign models to subtasks",
+        "category": "Productivity"
+      }
+    }
+  }
+}

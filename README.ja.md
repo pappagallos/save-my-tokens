@@ -69,6 +69,22 @@ Claude の連続対話には `claude-agent-acp` も必要です。ACP はモデ�
 
 表はスキルのインストール先です。実際のアカウントで応答を確認したのは Codex と Claude Code です。他のアダプターは模擬 CLI またはプロトコルの応答で確認しました。
 
+## 通常の Codex チャットで作業を分担する
+
+同じマーケットプレイスから次のプラグインを追加し、Codex の **プラグイン → インストール済み → Save My Tokens · Auto Workers** で有効にします。
+
+```sh
+codex plugin add save-my-tokens-auto@save-my-tokens-local
+```
+
+個人用の `~/.codex/AGENTS.md` に次の一文を追加し、新しいチャットを開いてください。
+
+> `save-my-tokens-auto:assign-worker` が使える場合、毎回の依頼で独立した作業をサブエージェントに自動で割り当ててください。メインモデルを維持し、プロジェクトの規則に従ってください。
+
+簡単な質問にはメインが答えます。分担する際は、抜粋には Luna、範囲を絞った調査には Terra、関連ファイルの変更には Sol、難しい設計の検討には Astra を優先します。現在のチャットで子に指定できるモデルから選びます。無効にすると新しいチャットからこのスキルが消えます。Codex CLI 0.169.0 の通常のチャットで、独立した二つのコード調査を依頼しました。実行記録ではメインが Sol（`gpt-6.2-sol`）、使用量の計算を調べた子が Terra（`gpt-6.1-terra`）でした。子の呼び出しにもトークンを使います。下の比較値はログ抜粋の実測結果です。 [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents)
+
+Claude Code、Cursor、Gemini CLI、Grok Build もサブエージェントのモデルを設定できます。このリポジトリの共通スキルで使えるのは、抜粋とターミナルでのモデル選択です。アプリ内のサブエージェントは各アプリで設定してください。 [Claude Code](https://code.claude.com/docs/en/sub-agents) · [Cursor](https://cursor.com/docs/subagents) · [Gemini CLI](https://geminicli.com/docs/core/subagents/) · [Grok Build](https://docs.x.ai/build/settings/reference)
+
 ## リクエストごとのモデル選択
 
 `route` は選択を表示し、`task` は質問を実行します。`chat` は同じ会話を保ったまま、質問ごとに選び直します。終了は `/exit` です。切り替わるのはランチャーが開いた会話です。既存のエディタの会話は各アプリが管理します。外部エンジンと書かれた環境では、プロジェクトの端末から `--engine codex` のようにログイン済みのエンジンを指定してください。

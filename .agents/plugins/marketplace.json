@@ -5,5 +5,10 @@
     "source": {"source": "local", "path": "./plugins/save-my-tokens"},
     "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
     "category": "Productivity"
+  }, {
+    "name": "save-my-tokens-auto",
+    "source": {"source": "local", "path": "./plugins/save-my-tokens-auto"},
+    "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+    "category": "Productivity"
   }]
 }

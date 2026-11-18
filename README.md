@@ -69,6 +69,22 @@ The terminal chat uses a separate ACP executable for Claude (`claude-agent-acp`)
 
 Each row is an installation target. The login and live execution tests on the development machine covered Codex and Claude Code. Other adapters were checked with simulated CLI or protocol responses.
 
+## Native workers in a Codex conversation
+
+Install the optional companion from the same marketplace. In Codex, open **Plugins → Installed → Save My Tokens · Auto Workers** and enable it.
+
+```sh
+codex plugin add save-my-tokens-auto@save-my-tokens-local
+```
+
+Add this standing preference once to your personal `~/.codex/AGENTS.md`, then open a new conversation.
+
+> When `save-my-tokens-auto:assign-worker` is available, I explicitly request native worker delegation for independent subtasks on each request. Keep my main model and respect project rules.
+
+The main agent answers simple questions itself. It can assign a bounded investigation to Terra, related edits to Sol, a difficult design question to Astra, or simple extraction to Luna when available. Only models offered for workers in that conversation qualify. Turning the companion off removes its skill from new conversations. In a Codex CLI 0.169.0 check, one ordinary request asked for two independent code investigations. The session records showed Sol (`gpt-6.2-sol`) leading and Terra (`gpt-6.1-terra`) checking the usage calculation. Workers use additional tokens. The paired measurements below cover log extraction. [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents)
+
+Other apps have their own worker settings. Claude Code, Cursor, Gemini CLI and Grok Build accept model choices for native workers. Installing the portable skill sets up extraction and terminal routing. Configure worker models separately in those apps. [Claude Code](https://code.claude.com/docs/en/sub-agents) · [Cursor](https://cursor.com/docs/subagents) · [Gemini CLI](https://geminicli.com/docs/core/subagents/) · [Grok Build](https://docs.x.ai/build/settings/reference)
+
 ## Route a request
 
 `route` previews the choice. `task` runs one request. `chat` keeps the session across turns, reclassifying each message. `/exit` closes it. The launcher switches the model in the session it opens. Existing editor chats keep the host’s model settings. For rows marked external, explicitly choose a signed-in engine such as `--engine codex` in that project's terminal.

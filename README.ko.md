@@ -69,6 +69,22 @@ Claude의 연속 대화에는 `claude-agent-acp` 실행 파일이 추가로 필�
 
 표의 각 행은 스킬을 설치할 수 있는 대상입니다. 실제 로그인 계정으로 답을 받은 환경은 Codex와 Claude Code입니다. 나머지 어댑터는 모의 CLI 또는 통신 응답으로 검사했습니다.
 
+## 일반 Codex 대화에서 작업 나누기
+
+같은 마켓플레이스에서 아래 플러그인을 추가하고 Codex의 **플러그인 → 설치됨 → Save My Tokens · Auto Workers**에서 켜세요.
+
+```sh
+codex plugin add save-my-tokens-auto@save-my-tokens-local
+```
+
+개인 설정 파일 `~/.codex/AGENTS.md`에 다음 한 줄을 추가하고 새 대화를 여세요.
+
+> `save-my-tokens-auto:assign-worker` 스킬이 있으면 매 요청에서 독립적인 작업을 서브 에이전트에 자동 배정해 주세요. 메인 모델을 유지하고 프로젝트 규칙을 따라 주세요.
+
+간단한 질문은 메인이 답합니다. 분리할 만한 작업이 있으면 단순 발췌는 Luna, 좁은 범위의 조사는 Terra, 관련 파일의 수정은 Sol, 복잡한 설계 검토는 Astra를 우선합니다. 현재 대화에서 보조 작업에 쓸 수 있는 모델 중에서 고릅니다. 플러그인을 끄면 새 대화에서 이 스킬이 사라집니다. Codex CLI 0.169.0에서 일반 대화로 두 코드 경로의 조사를 요청했습니다. 실행 기록에서 메인은 Sol(`gpt-6.2-sol`), 토큰 계산을 조사한 보조 모델은 Terra(`gpt-6.1-terra`)로 확인했습니다. 작업을 나누면 별도 호출에 토큰이 듭니다. 아래 전후 비교 수치는 로그 발췌 실험 결과입니다. [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents)
+
+Claude Code, Cursor, Gemini CLI, Grok Build에도 작업을 나눠 맡기고 역할별 모델을 고르는 기능이 있습니다. 이 저장소의 공통 스킬을 설치하면 발췌와 터미널 모델 선택을 쓸 수 있습니다. 각 앱에서 쓰는 보조 모델은 해당 앱에서 따로 설정하세요. [Claude Code](https://code.claude.com/docs/en/sub-agents) · [Cursor](https://cursor.com/docs/subagents) · [Gemini CLI](https://geminicli.com/docs/core/subagents/) · [Grok Build](https://docs.x.ai/build/settings/reference)
+
 ## 요청마다 모델 고르기
 
 `route`는 모델 선택 결과를 보여줍니다. `task`는 질문을 실행합니다. `chat`은 같은 대화를 이어 가면서 매번 모델을 다시 고릅니다. 끝내려면 `/exit`를 입력하세요. 모델이 바뀌는 곳은 이 명령이 연 대화입니다. 이미 열려 있는 앱 대화의 모델은 앱이 관리합니다. 표에 ‘외부 엔진 직접 선택’이라고 표시된 플랫폼에서는 프로젝트 터미널에서 `--engine codex`처럼 로그인한 엔진을 명시하세요.

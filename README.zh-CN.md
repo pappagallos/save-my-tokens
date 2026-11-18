@@ -69,6 +69,22 @@ Claude 连续对话还需要 `claude-agent-acp`。ACP 程序必须公开可选�
 
 表中列出技能安装目标。已使用实际账号验证 Codex 和 Claude Code 的回复，其余适配器通过模拟 CLI 或协议响应进行检查。
 
+## 在普通 Codex 对话中分配子任务
+
+从同一插件市场安装下面的可选插件，在 Codex 的 **插件 → 已安装 → Save My Tokens · Auto Workers** 中启用。
+
+```sh
+codex plugin add save-my-tokens-auto@save-my-tokens-local
+```
+
+将下面这句话添加到个人 `~/.codex/AGENTS.md`，然后打开新对话。
+
+> 如果当前提供 `save-my-tokens-auto:assign-worker` 技能，我明确要求在每次请求中将可独立完成的子任务委派给原生子代理。保留主模型并遵守项目规则。
+
+主代理直接回答简单问题。需要分工时，摘录优先用 Luna，局部调查用 Terra，跨文件修改用 Sol，复杂设计分析用 Astra。只能从当前对话允许的子代理模型中选择。关闭插件后，新对话中将不再显示该技能。在 Codex CLI 0.169.0 的普通对话中，我们要求调查两条独立的代码路径。会话记录显示主模型为 Sol（`gpt-6.2-sol`），检查用量计算的子代理为 Terra（`gpt-6.1-terra`）。启动子代理也会消耗词元。下方的对比数据来自日志摘录实验。 [Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents)
+
+Claude Code、Cursor、Gemini CLI 和 Grok Build 都有原生子代理模型设置。安装本仓库的通用技能可使用摘录和终端模型路由。应用内的子代理模型需另行配置。 [Claude Code](https://code.claude.com/docs/en/sub-agents) · [Cursor](https://cursor.com/docs/subagents) · [Gemini CLI](https://geminicli.com/docs/core/subagents/) · [Grok Build](https://docs.x.ai/build/settings/reference)
+
 ## 为每个请求选择模型
 
 `route` 预览模型选择，`task` 执行一次请求，`chat` 保留同一会话并在每一轮重新选择模型。输入 `/exit` 退出。切换发生在启动器创建的会话中。已有编辑器对话的模型由编辑器管理。表中标记为外部引擎的平台需要在项目终端显式指定已登录的引擎，例如 `--engine codex`。
